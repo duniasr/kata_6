@@ -14,9 +14,9 @@ public class WebService {
     private final Store store;
     private final Javalin app;
 
-    public WebService(Store store, Javalin app) {
+    public WebService(Store store) {
         this.store = store;
-        this.app = app;
+        this.app = Javalin.create();
         this.app.get("/histogram", this::histogram);
     }
 

@@ -11,16 +11,23 @@ import java.util.stream.Stream;
 
 public class Main {
     public static void main(String[] args) throws SQLException {
-        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:movies.db")){
-            connection.setAutoCommit(false);
-            importIfNeededInto(connection);
-            Desktop.create(new DatabaseStore(connection)).display().setVisible(true);
-        }
+        Connection connection = DriverManager.getConnection("jdbc:sqlite:movies.db");
+        connection.setAutoCommit(false);
+        importIfNeededInto(connection);
+        new WebService(new DatabaseStore(connection)).start();
     }
 
     private static void importIfNeededInto(Connection connection) throws SQLException {
-        if(new File("movies.db").length() > 0) return;
-        Stream<Movie> movies = new RemoteStore(MovieDeserializer::fromTsv).movies();
-        new DatabaseRecorder(connection).record(movies);
+        boolean tableExists = connection.getMetaData()
+                .getTables(null, null, "movies", null)
+                .next();
+
+        if (!tableExists) {
+            System.out.println("Downloading data...");
+            Stream<Movie> movies = new RemoteStore(MovieDeserializer::fromTsv).movies();
+            new DatabaseRecorder(connection).record(movies);
+            connection.commit();
+            System.out.println("Data imported!");
+        }
     }
 }

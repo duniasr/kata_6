@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HistogramAdapter {
-    private static String toJason(Histogram histogram){
+    public static String toJson(Histogram histogram){
         Map<String, Object> response = new HashMap<>();
         response.put("title", histogram.title());
         response.put("x_axis", histogram.x());
